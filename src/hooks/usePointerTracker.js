@@ -49,12 +49,25 @@ export function usePointerTracker() {
       pointer.current.isOutside = true;
     };
 
+    const handleTouchMove = (e) => {
+      if (e.touches && e.touches[0]) {
+        const t = e.touches[0];
+        handlePointerMove({ clientX: t.clientX, clientY: t.clientY });
+      }
+    };
+
     window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('pointerdown', handlePointerMove, { passive: true });
+    window.addEventListener('touchstart', handleTouchMove, { passive: true });
+    window.addEventListener('touchmove', handleTouchMove, { passive: true });
     document.addEventListener('mouseleave', handlePointerLeave, { passive: true });
     window.addEventListener('blur', handleWindowBlur, { passive: true });
 
     return () => {
       window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerdown', handlePointerMove);
+      window.removeEventListener('touchstart', handleTouchMove);
+      window.removeEventListener('touchmove', handleTouchMove);
       document.removeEventListener('mouseleave', handlePointerLeave);
       window.removeEventListener('blur', handleWindowBlur);
       if (motionQuery.removeEventListener) {

@@ -44,6 +44,17 @@ export default function ScrollJourney() {
 
   const [activeCardIndex, setActiveCardIndex] = useState(-1);
   const [totalPathLength, setTotalPathLength] = useState(4000);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect mobile screen width (< 640px)
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Contact form & email state
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
@@ -68,7 +79,22 @@ export default function ScrollJourney() {
   };
 
   // Organic S-curved path coordinate string (SVG 1000 x 4800 coordinate space)
+  // On mobile (<640px): runs along left margin (X ~ 45..60) so cards sit on the right
+  // On desktop (>=640px): runs down center (X ~ 485..518) with alternating left/right cards
   const pathD = useMemo(() => {
+    if (isMobile) {
+      return [
+        'M 50 0',
+        'C 50 180, 65 340, 50 580',
+        'C 35 820, 65 980, 50 1220',
+        'C 35 1460, 65 1620, 50 1860',
+        'C 35 2100, 65 2260, 50 2500',
+        'C 35 2740, 65 2900, 50 3140',
+        'C 35 3380, 65 3540, 50 3780',
+        'C 35 4000, 60 4140, 50 4320',
+        'C 45 4400, 50 4480, 50 4520'
+      ].join(' ');
+    }
     return [
       'M 500 0',
       'C 500 180, 518 340, 515 580',
@@ -80,7 +106,7 @@ export default function ScrollJourney() {
       'C 488 4000, 482 4140, 485 4320',
       'C 490 4400, 500 4480, 500 4520'
     ].join(' ');
-  }, []);
+  }, [isMobile]);
 
   // Cards dataset with asymmetric layout and journey positions
   const journeyCards = useMemo(() => [
@@ -453,7 +479,7 @@ export default function ScrollJourney() {
           {journeyCards.map((card, i) => {
             const ptY = (card.yPercent / 100) * 4800;
             const nodePos = nodePositions[i];
-            const nodeX = nodePos ? nodePos.x : (card.side === 'left' ? 440 : card.side === 'right' ? 580 : 500);
+            const nodeX = nodePos ? nodePos.x : (isMobile ? 50 : (card.side === 'left' ? 440 : card.side === 'right' ? 580 : 500));
             const nodeY = nodePos ? nodePos.y : ptY;
             const isActive = activeCardIndex === i;
 
@@ -463,7 +489,7 @@ export default function ScrollJourney() {
                 <circle
                   cx={nodeX}
                   cy={nodeY}
-                  r={isActive ? 8 : 4.5}
+                  r={isActive ? (isMobile ? 6 : 8) : (isMobile ? 3.5 : 4.5)}
                   fill={isActive ? '#111111' : '#ffffff'}
                   stroke="#111111"
                   strokeWidth={isActive ? '3' : '2'}
@@ -473,7 +499,7 @@ export default function ScrollJourney() {
                   <circle
                     cx={nodeX}
                     cy={nodeY}
-                    r={16}
+                    r={isMobile ? 12 : 16}
                     fill="none"
                     stroke="rgba(17, 17, 17, 0.25)"
                     strokeWidth="1.5"
@@ -499,10 +525,10 @@ export default function ScrollJourney() {
           className="z-30 flex items-center justify-center"
         >
           {/* Pulsing Aura */}
-          <div className="absolute -inset-3 rounded-full bg-neutral-900/[0.08] animate-pulse blur-sm" />
+          <div className="absolute -inset-2.5 rounded-full bg-neutral-900/[0.08] animate-pulse blur-sm" />
 
           {/* 3D Character Avatar Badge */}
-          <div className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white p-1 shadow-[0_12px_28px_-6px_rgba(0,0,0,0.18)] border border-neutral-900/[0.12] flex items-center justify-center overflow-hidden transition-transform duration-200 hover:scale-110">
+          <div className="relative w-11 h-11 sm:w-16 sm:h-16 rounded-full bg-white p-0.5 sm:p-1 shadow-[0_10px_25px_-5px_rgba(0,0,0,0.2)] border border-neutral-900/[0.12] flex items-center justify-center overflow-hidden transition-transform duration-200 hover:scale-110">
             {/* 3D Character Head Image */}
             <img
               src="/character/master_head_4k.png"
@@ -511,7 +537,7 @@ export default function ScrollJourney() {
               loading="eager"
             />
             {/* Small active status dot on head */}
-            <span className="absolute bottom-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white shadow-sm" />
+            <span className="absolute bottom-0.5 right-0.5 sm:bottom-1 sm:right-1 w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 border-2 border-white shadow-sm" />
           </div>
         </div>
       </div>
@@ -535,14 +561,14 @@ export default function ScrollJourney() {
               }}
               className={`absolute z-20 ${
                 isCenter
-                  ? 'left-1/2 -translate-x-1/2 w-[92%] sm:w-[540px] max-w-xl px-2'
+                  ? 'left-[54px] right-2 sm:left-1/2 sm:-translate-x-1/2 sm:w-[540px] max-w-xl'
                   : card.side === 'left'
-                  ? 'left-3 sm:left-auto sm:right-[58%] w-[calc(100%-1.5rem)] sm:w-[360px] lg:w-[420px]'
-                  : 'left-3 sm:left-[58%] w-[calc(100%-1.5rem)] sm:w-[360px] lg:w-[420px]'
+                  ? 'left-[54px] right-2 sm:left-auto sm:right-[58%] w-auto sm:w-[360px] lg:w-[420px]'
+                  : 'left-[54px] right-2 sm:left-[58%] sm:right-auto w-auto sm:w-[360px] lg:w-[420px]'
               }`}
             >
               <div
-                className={`relative rounded-3xl bg-white/85 backdrop-blur-2xl border transition-all duration-500 p-6 sm:p-7 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.06)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.12)] hover:-translate-y-1 ${
+                className={`relative rounded-3xl bg-white/90 backdrop-blur-2xl border transition-all duration-500 p-4 sm:p-7 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.06)] hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.12)] hover:-translate-y-1 ${
                   isActive
                     ? 'border-neutral-900/30 ring-2 ring-neutral-900/[0.08] shadow-[0_25px_60px_-10px_rgba(0,0,0,0.12)]'
                     : 'border-neutral-900/[0.08]'
@@ -555,18 +581,18 @@ export default function ScrollJourney() {
 
                 <div className="relative z-10 flex flex-col justify-between h-full">
                   {/* Card Header & Icon */}
-                  <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-start justify-between gap-3 mb-3 sm:mb-4">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
                       <div
-                        className={`w-11 h-11 rounded-2xl border flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shadow-sm ${card.iconColor}`}
+                        className={`w-9 h-9 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl border flex items-center justify-center transition-transform duration-300 group-hover:scale-105 shadow-sm shrink-0 ${card.iconColor}`}
                       >
-                        <IconComponent className="w-5 h-5" />
+                        <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                       <div>
-                        <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 font-sans">
+                        <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-neutral-500 font-sans">
                           {card.category}
                         </span>
-                        <h3 className="text-lg sm:text-xl font-bold font-display text-neutral-900 leading-tight">
+                        <h3 className="text-base sm:text-xl font-bold font-display text-neutral-900 leading-tight">
                           {card.title}
                         </h3>
                       </div>
@@ -585,16 +611,16 @@ export default function ScrollJourney() {
 
                   {/* Gmail ID Display Badge (Non-Hyperlink) */}
                   {card.emailId && (
-                    <div className="flex items-center justify-between p-2.5 px-3 rounded-2xl bg-neutral-900/[0.03] border border-neutral-900/[0.08] mb-3">
-                      <div className="flex items-center gap-2 overflow-hidden">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-2.5 px-3 rounded-2xl bg-neutral-900/[0.03] border border-neutral-900/[0.08] mb-3 gap-2">
+                      <div className="flex items-center gap-2 overflow-hidden w-full sm:w-auto">
                         <Mail className="w-3.5 h-3.5 text-neutral-500 shrink-0" />
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans">Gmail ID:</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 font-sans shrink-0">Gmail ID:</span>
                         <span className="text-xs font-mono font-semibold text-neutral-800 truncate select-all">{card.emailId}</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleCopyEmail(card.emailId)}
-                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white text-[11px] font-medium text-neutral-700 hover:text-neutral-900 border border-neutral-200 shadow-2xs transition-all active:scale-95 shrink-0"
+                        className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white text-[11px] font-medium text-neutral-700 hover:text-neutral-900 border border-neutral-200 shadow-2xs transition-all active:scale-95 shrink-0 self-end sm:self-auto"
                       >
                         {copiedEmail ? (
                           <>
@@ -685,7 +711,7 @@ export default function ScrollJourney() {
                         </a>
                       </div>
                       {/* Live Iframe Viewport */}
-                      <div className="relative w-full h-52 sm:h-64 bg-white overflow-hidden">
+                      <div className="relative w-full h-44 sm:h-56 lg:h-64 bg-white overflow-hidden">
                         <iframe
                           src={card.iframeUrl}
                           title={`${card.title} Live Web App`}
