@@ -1,19 +1,4 @@
-import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
-
-const outfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-outfit',
-  weight: ['400', '500', '600', '700', '800'],
-  display: 'swap',
-});
-
-const jakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-jakarta',
-  weight: ['400', '500', '600'],
-  display: 'swap',
-});
 
 export const metadata = {
   title: 'Aniketh — Interactive 3D Portfolio',
@@ -29,7 +14,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${outfit.variable} ${jakarta.variable}`}>
+    <html lang="en">
       <body className="antialiased bg-[#fcfcfc] font-sans overflow-x-hidden overflow-y-auto">
         {children}
       </body>
