@@ -1,0 +1,31 @@
+# Dependencies
+/node_modules
+/.pnpm-store
+
+# Next.js build output
+/.next/
+/out/
+/build
+
+# Root debug and temporary crop files
+/annotated_guides.png
+/crop_*.png
+/debug_slices.png
+/image.png
+/variations.png
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local environment variables
+.env
+.env*.local
+
+# OS / Editor generated files
+.DS_Store
+.vscode/
+.idea/
+Thumbs.db
